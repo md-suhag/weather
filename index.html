@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  #weather {
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="weather">
+  <h2>Loading...</h2>
+</div>
+<script>
+  // Function to get weather data based on latitude and longitude
+  function getWeather(latitude, longitude) {
+    const apiKey = '3b26fa9d2cda221957c4b957e7ff9562';
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
+
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        const weatherData = {
+          location: data.name,
+          description: data.weather[0].description,
+          temperature: data.main.temp,
+          icon: data.weather[0].icon
+        };
+
+        displayWeather(weatherData);
+      })
+      .catch(error => {
+        console.log('Error fetching weather data:', error);
+        document.getElementById('weather').innerHTML = '<h2>Unable to fetch weather data. Please try again later.</h2>';
+      });
+  }
+
+  // Function to display weather data
+  function displayWeather(weatherData) {
+    const weatherElement = document.getElementById('weather');
+    weatherElement.innerHTML = `
+      <h2>${weatherData.location}</h2>
+      <p>${weatherData.description}</p>
+      <p>${weatherData.temperature}°C</p>
+      <img src="http://openweathermap.org/img/wn/${weatherData.icon}.png" alt="weather icon">
+    `;
+  }
+
+  // Function to handle success of retrieving geolocation
+  function success(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+    getWeather(latitude, longitude);
+  }
+
+  // Function to handle error in retrieving geolocation
+  function error() {
+    document.getElementById('weather').innerHTML = '<h2>Unable to retrieve your location. Please enable location services or try again later.</h2>';
+  }
+
+  // Get current location and weather when the page loads
+  window.addEventListener('load', () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(success, error);
+    } else {
+      document.getElementById('weather').innerHTML = '<h2>Geolocation is not supported by your browser.</h2>';
+    }
+  });
+</script>
+</body>
+</html>
